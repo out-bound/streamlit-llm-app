@@ -11,17 +11,21 @@ import os
 # 1) .env の読み込み
 # ============================
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+if not openai_api_key:
+    st.error("OPENAI_API_KEY が設定されていません。")
+    st.stop()
 
 # ============================
 # 2) LangChain の LLM設定
 # ============================
 llm = ChatOpenAI(
-    api_key=OPENAI_API_KEY,
     model="gpt-4o-mini",
     temperature=0.7,
+    client_kwargs={
+        "api_key": openai_api_key  
+    }
 )
-
 
 # ============================
 # 3) LLM呼び出し関数
