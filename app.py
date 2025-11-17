@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import streamlit as st
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 import os
@@ -10,21 +9,19 @@ import os
 # ============================
 # 1) .env の読み込み
 # ============================
-load_dotenv()
 openai_api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
 if not openai_api_key:
     st.error("OPENAI_API_KEY が設定されていません。")
     st.stop()
+
+os.environ["OPENAI_API_KEY"] = openai_api_key
 
 # ============================
 # 2) LangChain の LLM設定
 # ============================
 llm = ChatOpenAI(
     model="gpt-4o-mini",
-    temperature=0.7,
-    client_kwargs={
-        "api_key": openai_api_key  
-    }
+    temperature=0
 )
 
 # ============================
@@ -46,18 +43,18 @@ def call_llm(user_input: str, expert_type: str) -> str:
     else:
         system_message = "あなたは有能な専門家として、分かりやすく答えてください。"
 
-    # LangChain プロンプト構築
+    # LangChain プロンプト構築（input を明示的に使用）
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", system_message),
-            ("user", "{user_input}"),
+            ("user", "{input}"),
         ]
     )
 
     chain = prompt | llm
 
     # LLMに問い合わせ
-    response = chain.invoke({"user_input": user_input})
+    response = chain.invoke({"input": user_input})
 
     # 返答（Assistantのメッセージ部分）
     return response.content
@@ -69,7 +66,6 @@ def call_llm(user_input: str, expert_type: str) -> str:
 
 st.title(" LLMアプリ（LangChain × Streamlit）")
 
-# アプリの説明表示
 st.markdown(
     """
 ###  アプリの概要
